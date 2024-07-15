@@ -31,22 +31,30 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     const query = agent.parameters.query;
     
     if(position=='champion' && query=='recent'){
-      return axios({
-        method: "GET",
-        url: "http://ergast.com/api/f1/current/last/results.json",
-        data: "",
-      })
-        .then((response) => {
-          var json = response.data.MRData.RaceTable; //General query for race
+		fetch("https://v1.formula-1.api-sports.io/rankings/races?race=50", {
+			"method": "GET",
+			"headers": {
+				"x-rapidapi-host": "v1.formula-1.api-sports.io",
+				"x-rapidapi-key": "XxXxXxXxXxXxXxXxXxXxXxXx"
+			}
+		})
+		.then(response => {
+			console.log(response.json());
+		})
+		.then(data => {
+			if (data && data.response && data.response.length > 0) {
+				const winner = data.response[0];  // Get the first element which is the winner
+				console.log(`The winner is ${winner.driver.name}`);
+				agent.add(`The winner of the most recent race was ${winner}`); 
+			} else {
+				console.log("No data found");
+			}
+		})
+		.catch(err => {
+			console.log(err);
+		});
 
-          var name = json.Races[0].Results[0].Driver.givenName;
-          var surname = json.Races[0].Results[0].Driver.familyName;
-	      console.log("This is a test");
-          agent.add(`The winner of the most recent race was ${name + " " + surname}`); 
-        })
-        .catch((error) => {
-          console.log(error);
-        });
+
     }
     
 	
